@@ -1,10 +1,9 @@
 from tkinter import *
 from sudoku_board import SudokuBoard
-import time
 
 root = Tk()
 root.title("Sudoku Solver with Graph Coloring")
-root.geometry("324x400")
+root.geometry("330x400")
 
 errLabel = Label(root, text = "", fg = "red")
 errLabel.grid(row = 15, column = 1, columnspan = 10, pady = 5)
@@ -66,11 +65,9 @@ def solveBoard():
         
     s = SudokuBoard(board)
     
-    start = time.time()
-    s.solveGraphColoring(m=9)
-    end = time.time()
+    s.solve_graph_coloring(m=9)
     
-    solvedLabel.configure(text = f"Operation took {str(round(end-start,4))} sec")
+    solvedLabel.configure(text = f"Operation took {str(s.solve_time)} sec")
                 
     for row in range(2,11):
         for col in range(1,10):
