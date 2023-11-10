@@ -22,20 +22,20 @@ class SudokuConnections:
                 matrix[r][c] = count
                 count += 1
 
-        head_connections = dict()  # head: connections
+        head_connections = dict() 
 
         for r in range(9):
             for c in range(9):
-                head = matrix[r][c]  # id of the vertex
+                head = matrix[r][c]
                 connections = self.determine_connections(matrix, r, c)
                 head_connections[head] = connections
 
         self.connect_all(head_connections=head_connections)
 
     def connect_all(self, head_connections):
-        for head in head_connections.keys():  # head is the start idx
+        for head in head_connections.keys():
             connections = head_connections[head]
-            for key in connections:  # get list of all the connections
+            for key in connections:
                 for v in connections[key]:
                     self.graph.add_edge(src=head, dest=v)
 
@@ -45,19 +45,16 @@ class SudokuConnections:
         col = []
         block = []
 
-        # ROWS
         for col_idx in range(c + 1, 9):
             row.append(matrix[r][col_idx])
 
         connections["rows"] = row
 
-        # COLS
         for row_idx in range(r + 1, 9):
             col.append(matrix[row_idx][c])
 
         connections["cols"] = col
 
-        # BLOCKS
         block_start_r = (r // 3) * 3
         block_start_c = (c // 3) * 3
 
