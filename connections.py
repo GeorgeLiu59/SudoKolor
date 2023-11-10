@@ -1,189 +1,70 @@
 from sudoku_graph import Graph
 
-class SudokuConnections : 
-    def __init__(self) :  # constructor
-
-        self.graph = Graph() # Graph Object
-
+class SudokuConnections:
+    def __init__(self):
+        self.graph = Graph()
         self.rows = 9
         self.cols = 9
         self.total_blocks = 81
+        self.create_graph()
+        self.connect_edges()
+        self.all_ids = self.graph.get_all_vertices_ids()
 
-        self.createGraph() # Generates all the nodes
-        self.connectEdges() # connects all the nodes acc to sudoku constraints
+    def create_graph(self):
+        for idx in range(1, self.total_blocks + 1):
+            _ = self.graph.add_vertex(idx)
 
-        self.allIds = self.graph.getAllNodesIds() # storing all the ids in a list
-
-        
-    def createGraph(self) : 
-        """
-        Generates nodes with id from 1 to 81.
-        Both inclusive
-        """
-        for idx in range(1, self.total_blocks+1) : 
-            _ = self.graph.addNode(idx)
-
-    def connectEdges(self) : 
-        """
-        Connect nodes according to Sudoku Constraints : 
-
-        # ROWS
-
-       from start of each id number connect all the 
-       successive numbers till you reach a multiple of 9
-
-
-        # COLS (add 9 (+9))
-
-        from start of id number. +9 for each connection
-        till you reach a number >= 73 and <= 81
-
-        # BLOCKS
-        Connect all the elements in the block which do not 
-        come in the same column or row.
-        1   2   3
-        10  11  12
-        19  20  21
-
-        1 -> 11, 12, 20, 21
-        2 -> 10, 19, 12, 21
-        3 -> 10, 11, 19, 20 
-        Similarly for 10, 11, 12, 19, 20, 21.
-
-        """
-        
-        matrix = [[0 for cols in range(self.cols)] 
-        for rows in range(self.rows)]
-
+    def connect_edges(self):
+        matrix = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
         count = 1
-        for rows in range(9) :
-            for cols in range(9):
-                matrix[rows][cols] = count
-                count+=1
+        for r in range(9):
+            for c in range(9):
+                matrix[r][c] = count
+                count += 1
 
-        head_connections = dict() # head : connections
+        head_connections = dict()  # head: connections
 
-        for row in range(9) :
-            for col in range(9) : 
-                
-                head = matrix[row][col] #id of the node
-                connections = self.determineConnections(matrix, row, col)
-                
+        for r in range(9):
+            for c in range(9):
+                head = matrix[r][c]  # id of the vertex
+                connections = self.determine_connections(matrix, r, c)
                 head_connections[head] = connections
-        # connect all the edges
 
-        self.connectAll(head_connections=head_connections)
-        
-    def connectAll(self, head_connections) : 
-        for head in head_connections.keys() : #head is the start idx
+        self.connect_all(head_connections=head_connections)
+
+    def connect_all(self, head_connections):
+        for head in head_connections.keys():  # head is the start idx
             connections = head_connections[head]
-            for key in connections :  #get list of all the connections
-                for v in connections[key] : 
-                    self.graph.addEdge(src=head, dst=v)
+            for key in connections:  # get list of all the connections
+                for v in connections[key]:
+                    self.graph.add_edge(src=head, dest=v)
 
- 
-    def determineConnections(self, matrix, rows, cols) :
-
-        """
-        matrix : stores the id of each node representing each cell
-
-        returns dictionary
-
-        connections - dictionary
-        rows : [all the ids in the rows]
-        cols : [all the ids in the cols]
-        blocks : [all the ids in the block]
-        
-        ** to be connected to the head.
-        """
+    def determine_connections(self, matrix, r, c):
         connections = dict()
-
         row = []
         col = []
         block = []
 
         # ROWS
-        for c in range(cols+1, 9) : 
-            row.append(matrix[rows][c])
-        
+        for col_idx in range(c + 1, 9):
+            row.append(matrix[r][col_idx])
+
         connections["rows"] = row
 
-        # COLS 
-        for r in range(rows+1, 9):
-            col.append(matrix[r][cols])
-        
+        # COLS
+        for row_idx in range(r + 1, 9):
+            col.append(matrix[row_idx][c])
+
         connections["cols"] = col
 
         # BLOCKS
-        
-        if rows%3 == 0 : 
+        block_start_r = (r // 3) * 3
+        block_start_c = (c // 3) * 3
 
-            if cols%3 == 0 :
-                
-                block.append(matrix[rows+1][cols+1])
-                block.append(matrix[rows+1][cols+2])
-                block.append(matrix[rows+2][cols+1])
-                block.append(matrix[rows+2][cols+2])
+        for block_r in range(block_start_r, block_start_r + 3):
+            for block_c in range(block_start_c, block_start_c + 3):
+                if block_r != r or block_c != c:
+                    block.append(matrix[block_r][block_c])
 
-            elif cols%3 == 1 :
-                
-                block.append(matrix[rows+1][cols-1])
-                block.append(matrix[rows+1][cols+1])
-                block.append(matrix[rows+2][cols-1])
-                block.append(matrix[rows+2][cols+1])
-                
-            elif cols%3 == 2 :
-                
-                block.append(matrix[rows+1][cols-2])
-                block.append(matrix[rows+1][cols-1])
-                block.append(matrix[rows+2][cols-2])
-                block.append(matrix[rows+2][cols-1])
-
-        elif rows%3 == 1 :
-            
-            if cols%3 == 0 :
-                
-                block.append(matrix[rows-1][cols+1])
-                block.append(matrix[rows-1][cols+2])
-                block.append(matrix[rows+1][cols+1])
-                block.append(matrix[rows+1][cols+2])
-
-            elif cols%3 == 1 :
-                
-                block.append(matrix[rows-1][cols-1])
-                block.append(matrix[rows-1][cols+1])
-                block.append(matrix[rows+1][cols-1])
-                block.append(matrix[rows+1][cols+1])
-                
-            elif cols%3 == 2 :
-                
-                block.append(matrix[rows-1][cols-2])
-                block.append(matrix[rows-1][cols-1])
-                block.append(matrix[rows+1][cols-2])
-                block.append(matrix[rows+1][cols-1])
-
-        elif rows%3 == 2 :
-            
-            if cols%3 == 0 :
-                
-                block.append(matrix[rows-2][cols+1])
-                block.append(matrix[rows-2][cols+2])
-                block.append(matrix[rows-1][cols+1])
-                block.append(matrix[rows-1][cols+2])
-
-            elif cols%3 == 1 :
-                
-                block.append(matrix[rows-2][cols-1])
-                block.append(matrix[rows-2][cols+1])
-                block.append(matrix[rows-1][cols-1])
-                block.append(matrix[rows-1][cols+1])
-                
-            elif cols%3 == 2 :
-                
-                block.append(matrix[rows-2][cols-2])
-                block.append(matrix[rows-2][cols-1])
-                block.append(matrix[rows-1][cols-2])
-                block.append(matrix[rows-1][cols-1])
-        
         connections["blocks"] = block
         return connections
