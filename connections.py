@@ -1,4 +1,4 @@
-from graph import Graph
+from sudoku_graph import Graph
 
 class SudokuConnections : 
     def __init__(self) :  # constructor
